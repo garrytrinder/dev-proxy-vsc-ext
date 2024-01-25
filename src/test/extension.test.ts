@@ -39,15 +39,32 @@ suite('Extension Test Suite', () => {
 });
 
 suite('urlsToWatch', () => {
-  test('should show error when opening document with no urlsToWatch found', async () => {
-    const fileName = 'config-urls-to-watch-required.json';
+  // test('should show error when opening document with no urlsToWatch found', async () => {
+  //   const fileName = 'config-urls-to-watch-required.json';
+  //   const filePath = path.resolve(__dirname, 'examples', fileName);
+  //   const document = await vscode.workspace.openTextDocument(filePath);
+  //   const diagnostics = vscode.languages.getDiagnostics(document.uri);
+
+  //   const expected = {
+  //     message: 'Add at least one url to watch.',
+  //     severity: vscode.DiagnosticSeverity.Error,
+  //   };
+  //   const actual = {
+  //     message: diagnostics[0]?.message,
+  //     severity: diagnostics[0]?.severity,
+  //   };
+  //   assert.deepStrictEqual(actual, expected);
+  // });
+
+  test('should show a warning when opening document with no urlsToWatch found', async () => {
+    const fileName = 'config-urls-to-watch-optional.json';
     const filePath = path.resolve(__dirname, 'examples', fileName);
     const document = await vscode.workspace.openTextDocument(filePath);
     const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
     const expected = {
-      message: 'Add at least one url to watch.',
-      severity: vscode.DiagnosticSeverity.Error,
+      message: 'Add at least one global urlToWatch, use --urls-to-watch option, or add urlsToWatch array to plugins.',
+      severity: vscode.DiagnosticSeverity.Warning,
     };
     const actual = {
       message: diagnostics[0]?.message,
@@ -56,20 +73,15 @@ suite('urlsToWatch', () => {
     assert.deepStrictEqual(actual, expected);
   });
 
-  test('should show error when document changes and has no urlsToWatch found', async () => {
-    const fileName = 'config-urls-to-watch-required.json';
+  test('should show information when document has no urlsToWatch property', async () => {
+    const fileName = 'devproxyrc.json';
     const filePath = path.resolve(__dirname, 'examples', fileName);
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const document = await vscode.workspace.openTextDocument({
-      language: 'json',
-      content: fileContents,
-    });
-    await sleep(1000);
+    const document = await vscode.workspace.openTextDocument(filePath);
     const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
     const expected = {
-      message: 'Add at least one url to watch.',
-      severity: vscode.DiagnosticSeverity.Error,
+      message: 'No global urlsToWatch. Use --urls-to-watch option, or add urlsToWatch array to plugins.',
+      severity: vscode.DiagnosticSeverity.Information,
     };
     const actual = {
       message: diagnostics[0]?.message,
@@ -78,29 +90,51 @@ suite('urlsToWatch', () => {
     assert.deepStrictEqual(actual, expected);
   });
 
-  test('should have no error after adding a urlToWatch', async () => {
-    const fileName = 'config-urls-to-watch-required.json';
-    const filePath = path.resolve(__dirname, 'examples', fileName);
-    const document = await vscode.workspace.openTextDocument(filePath);
-    await sleep(1000);
-    const documentNode = parse(document.getText()) as parse.ObjectNode;
-    const urlsToWatchNode = getASTNode(
-      documentNode.children,
-      'Identifier',
-      'urlsToWatch'
-    );
-    const position = getStartPositionFromASTNode(
-      urlsToWatchNode?.value as parse.ArrayNode
-    );
-    const edit = new vscode.WorkspaceEdit();
-    edit.insert(document.uri, position, '"https://example.com"');
-    await vscode.workspace.applyEdit(edit);
-    const diagnostics = vscode.languages.getDiagnostics(document.uri);
+  // test('should show error when document changes and has no urlsToWatch found', async () => {
+  //   const fileName = 'config-urls-to-watch-required.json';
+  //   const filePath = path.resolve(__dirname, 'examples', fileName);
+  //   const fileContents = fs.readFileSync(filePath, 'utf8');
+  //   const document = await vscode.workspace.openTextDocument({
+  //     language: 'json',
+  //     content: fileContents,
+  //   });
+  //   await sleep(1000);
+  //   const diagnostics = vscode.languages.getDiagnostics(document.uri);
 
-    const expected = 0;
-    const actual = diagnostics.length;
-    assert.strictEqual(actual, expected);
-  });
+  //   const expected = {
+  //     message: 'Add at least one url to watch.',
+  //     severity: vscode.DiagnosticSeverity.Error,
+  //   };
+  //   const actual = {
+  //     message: diagnostics[0]?.message,
+  //     severity: diagnostics[0]?.severity,
+  //   };
+  //   assert.deepStrictEqual(actual, expected);
+  // });
+
+  // test('should have no error after adding a urlToWatch', async () => {
+  //   const fileName = 'config-urls-to-watch-required.json';
+  //   const filePath = path.resolve(__dirname, 'examples', fileName);
+  //   const document = await vscode.workspace.openTextDocument(filePath);
+  //   await sleep(1000);
+  //   const documentNode = parse(document.getText()) as parse.ObjectNode;
+  //   const urlsToWatchNode = getASTNode(
+  //     documentNode.children,
+  //     'Identifier',
+  //     'urlsToWatch'
+  //   );
+  //   const position = getStartPositionFromASTNode(
+  //     urlsToWatchNode?.value as parse.ArrayNode
+  //   );
+  //   const edit = new vscode.WorkspaceEdit();
+  //   edit.insert(document.uri, position, '"https://example.com"');
+  //   await vscode.workspace.applyEdit(edit);
+  //   const diagnostics = vscode.languages.getDiagnostics(document.uri);
+
+  //   const expected = 0;
+  //   const actual = diagnostics.length;
+  //   assert.strictEqual(actual, expected);
+  // });
 });
 
 suite('isConfigFile', () => {

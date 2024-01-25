@@ -17,6 +17,7 @@ export const getRangeFromASTNode = (
     | parse.LiteralNode
     | parse.ObjectNode
     | parse.ValueNode
+    | parse.IdentifierNode
 ) => {
   const startLine = node?.loc?.start.line || 0;
   const endLine = node?.loc?.end.line || 0;
